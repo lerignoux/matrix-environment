@@ -1,0 +1,60 @@
+version: '3.1'
+
+services:
+
+  riot:
+    container_name: matrix-riot
+    image: bubuntux/riot-web
+    networks:
+      - matrix
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 14Develop
+      POSTGRES_DB: life-buff
+    volumes:
+      - riot/config.json:/etc/riot-web/config.json:ro
+
+  matrix:
+    container_name: matrix
+    image: matrixdotorg/synapse
+    networks:
+      - matrix
+    restart: always
+    environment:
+      - SYNAPSE_SERVER_NAME: matrix.laurent.erignoux.fr
+      - SYNAPSE_REPORT_STATS: yes
+      - SYNAPSE_NO_TLS: 1
+    volumes:
+      - matrix/data:/data
+
+  matrix:
+    container_name: matrix-turn
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: life-buff
+    networks:
+      - matrix
+    restart: always
+    ports:
+      - 6543:6543
+    volumes:
+      - ~/Projects/life-buff:/app
+
+  nginx:
+    container_name: matrix-nginx
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: life-buff
+    networks:
+      - matrix
+    restart: always
+    ports:
+      - 6543:6543
+    volumes:
+      - ~/Projects/life-buff:/app
+
+networks:
+  matrix:
